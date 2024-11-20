@@ -27,7 +27,63 @@
 
             const data = await response.json();
             document.getElementById('newIkasle').innerText = JSON.stringify(data, null, 2);
+            loadEmails();
         }
+        
+        async function deleteIkasle() {
+        const id = document.getElementById("deleteId").value;
+
+        const response = await fetch(`/api/ikasleak/${id}`, {
+          method: "DELETE",
+        });
+
+        const data = await response.json();
+        document.getElementById("deletedIkasle").innerText = JSON.stringify(data,null,2);
+        loadEmails();
+      }
+      async function loadEmails() {
+        const select = document.getElementById('aukeraEmail');
+         try {
+            const response = await fetch('/api/ikasleak');
+            const ikasleak = await response.json();
+
+            select.innerHTML = '';
+
+            ikasleak.forEach(ikasle => {
+                const option = document.createElement('option');
+                option.value = ikasle.email; 
+                option.textContent = ikasle.email;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar los emails:', error);
+        }
+    }
+    async function editIkasle() {
+    const email = document.getElementById('aukeraEmail').value; 
+    const izena = document.getElementById('editIzena').value;
+    const adina = document.getElementById('editAdina').value;
+    const newEmail = document.getElementById('editEmail').value;
+
+    try {
+        const response = await fetch(`/api/ikasleak/${email}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ izena, adina, email: newEmail }),
+        });
+
+        const data = await response.json();
+        document.getElementById('updatedIkasle').innerText = JSON.stringify(data, null, 2);
+        loadEmails();
+    } catch (error) {
+        console.error('Error al editar ikasle:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadEmails);
+
     </script>
 </head>
 <body>
@@ -49,5 +105,30 @@
         <button type="submit">Create</button>
     </form>
     <pre id="newIkasle"></pre>
+    <h2>Delete Ikasle</h2>
+    <form onsubmit="event.preventDefault(); deleteIkasle();">
+        <label for="id">ID:</label>
+        <input type="text" id="deleteId" name="deleteId" required>
+        <br>
+        <button type="submit">Delete</button>
+    </form>
+    <pre id="deletedIkasle"></pre>
+    <form onsubmit="event.preventDefault(); editIkasle();">
+        <label for="aukeraEmail">Ikasle Email:</label>
+        <select id="aukeraEmail"></select>
+        <br> 
+        <label for="editIzena">Izena:</label>
+        <input type="text" id="editIzena" name="editIzena" required>
+        <br> 
+        <label for="editAdina">Adina:</label>
+        <input type="text" id="editAdina" name="editAdina" required>
+        <br>
+        <label for="editEmail">Email:</label>
+        <input type="text" id="editEmail" name="editEmail" required>
+        <br>
+        <button type="submit">Edit</button>
+    </form>
+    <pre id="updatedIkasle"></pre>
+         
 </body>
 </html>
