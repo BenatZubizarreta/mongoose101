@@ -28,6 +28,7 @@
             const data = await response.json();
             document.getElementById('newIkasle').innerText = JSON.stringify(data, null, 2);
             loadEmails();
+            loadIkasleak();
         }
         
         async function deleteIkasle() {
@@ -40,6 +41,7 @@
         const data = await response.json();
         document.getElementById("deletedIkasle").innerText = JSON.stringify(data,null,2);
         loadEmails();
+        loadIkasleak();
       }
       async function loadEmails() {
         const select = document.getElementById('aukeraEmail');
@@ -77,13 +79,93 @@
         const data = await response.json();
         document.getElementById('updatedIkasle').innerText = JSON.stringify(data, null, 2);
         loadEmails();
+        loadIkasleak();
+
     } catch (error) {
         console.error('Error al editar ikasle:', error);
     }
 }
+async function createTalde() {
+            const izena = document.getElementById('taldeIzena').value;
 
-document.addEventListener('DOMContentLoaded', loadEmails);
+            const response = await fetch('/api/taldeak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ izena })
+            });
 
+            const data = await response.json();
+            document.getElementById('newTalde').innerText = JSON.stringify(data, null, 2);
+            loadTaldeak();
+        }
+        async function loadIkasleak() {
+            const select = document.getElementById('aukeraIkasle');
+            try {
+                const response = await fetch('/api/ikasleak');
+                const ikasleak = await response.json();
+
+                select.innerHTML = ''; 
+
+                ikasleak.forEach(ikasle => {
+                    const option = document.createElement('option');
+                    option.value = ikasle._id; 
+                    option.textContent = ikasle.email; 
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar los Ikasleak:', error);
+            }
+        }
+        async function loadTaldeak() {
+            const select = document.getElementById('aukeraTalde');
+            try {
+                const response = await fetch('/api/taldeak');
+                const taldeak = await response.json();
+
+                select.innerHTML = ''; 
+
+                taldeak.forEach(talde => {
+                    const option = document.createElement('option');
+                    option.value = talde._id;
+                    option.textContent = talde.izena;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error al cargar los Taldeak:', error);
+            }
+        }
+
+        async function assignIkasle() {
+            const taldeId = document.getElementById('aukeraTalde').value;
+            const ikasleId = document.getElementById('aukeraIkasle').value;
+
+            try {
+                const response = await fetch('/api/taldeak/assign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ taldeId, ikasleId }),
+                });
+
+                const data = await response.json();
+                document.getElementById('updatedTalde').innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error al asignar Ikasle al Talde:', error);
+            }
+        }
+        async function fetchTaldeak() {
+            const response = await fetch('/api/taldeak');
+            const data = await response.json();
+            document.getElementById('taldeak').innerText = JSON.stringify(data, null, 2);
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadIkasleak();
+            loadTaldeak();
+            loadEmails();
+        });
     </script>
 </head>
 <body>
@@ -113,6 +195,7 @@ document.addEventListener('DOMContentLoaded', loadEmails);
         <button type="submit">Delete</button>
     </form>
     <pre id="deletedIkasle"></pre>
+    <h2>Edit Ikasle</h2>
     <form onsubmit="event.preventDefault(); editIkasle();">
         <label for="aukeraEmail">Ikasle Email:</label>
         <select id="aukeraEmail"></select>
@@ -129,6 +212,27 @@ document.addEventListener('DOMContentLoaded', loadEmails);
         <button type="submit">Edit</button>
     </form>
     <pre id="updatedIkasle"></pre>
-         
+    <h2>Create Talde</h2>
+    <form onsubmit="event.preventDefault(); createTalde();">
+        <label for="izena">Talde izena:</label>
+        <input type="text" id="taldeIzena" name="taldeIzena" required>
+        <br>
+        <button type="submit">Create</button>
+    </form>
+    <pre id="newTalde"></pre>
+    <h2>Assing Ikasle to Talde</h2>
+    <form onsubmit="event.preventDefault(); assignIkasle();">
+        <label for="aukeraTalde">Talde:</label>
+        <select id="aukeraTalde"></select>
+        <br> 
+        <label for="aukeraIkasle">Ikasle:</label>
+        <select id="aukeraIkasle"></select>
+        <br> 
+        <button type="submit">Assign</button>
+    </form>
+    <pre id="updatedTalde"></pre>
+    <h2>Get Taldeak</h2>
+    <button onclick="fetchTaldeak()">Get Talde</button>
+    <pre id="taldeak"></pre>
 </body>
 </html>
